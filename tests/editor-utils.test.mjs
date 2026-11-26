@@ -49,3 +49,22 @@ test("safe archive names strip leading underscores and preserve trailing cleanup
   assert.equal(zip.safeArchiveName("My Pack---"), "my-pack");
   assert.match(zip.safeArchiveName("__audio-pack"), /^[a-z0-9][a-z0-9_-]*$/);
 });
+
+
+test("clip range is clamped to the source duration and minimum clip length", () => {
+  assert.deepEqual(editorUtils.clampClipRange(0, 12, 5), { start: 0, end: 5 });
+  assert.deepEqual(editorUtils.clampClipRange(99, 100, 5), { start: 4.9, end: 5 });
+  assert.deepEqual(editorUtils.clampClipRange(-2, 0, 5), { start: 0, end: 0.1 });
+  assert.equal(editorUtils.clampClipRange(0, 1, 0.09), null);
+});
+
+test("clip ranges must stay within the source and meet duration limits", () => {
+  const allowed = editorUtils.isClipRangeAllowed;
+  assert.equal(allowed(2, 12, 12), true);
+  assert.equal(allowed(2, 12.01, 12), false);
+  assert.equal(allowed(0, 10.0009, 20), true);
+  assert.equal(allowed(0, 10.002, 20), false);
+  assert.equal(allowed(2, 2.05, 12), false);
+  assert.equal(allowed(0, 0.1, 0.1), true);
+  assert.equal(allowed(0, 0.1, 0.09), false);
+});
