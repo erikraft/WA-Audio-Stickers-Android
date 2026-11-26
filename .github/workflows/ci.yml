@@ -81,7 +81,7 @@ jobs:
         run: rm -f "${{ runner.temp }}/ci-release.p12"
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: erikraft-sound-stickers-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk

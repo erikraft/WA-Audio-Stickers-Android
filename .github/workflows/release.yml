@@ -129,7 +129,7 @@ jobs:
 
       - name: Upload APK
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: erikraft-sound-stickers-apk
           path: ErikrafT-Sound-Stickers-release.apk
@@ -137,7 +137,7 @@ jobs:
 
       - name: Upload AAB
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: erikraft-sound-stickers-aab
           path: ErikrafT-Sound-Stickers-release.aab
