@@ -1,6 +1,6 @@
 const TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let v=n;for(let k=0;k<8;k++)v=(v&1)?0xedb88320^(v>>>1):v>>>1;t[n]=v>>>0}return t})();
 export function crc32(input){const bytes=input instanceof Uint8Array?input:new Uint8Array(input);let v=0xffffffff;for(const b of bytes)v=TABLE[(v^b)&255]^(v>>>8);return(v^0xffffffff)>>>0}
-export function safeArchiveName(value,fallback="sticker-pack"){const name=String(value??"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9_-]+/g,"-").replace(/^[-_]+|[-_]+$/g,"").slice(0,48);return name||fallback}
+export function safeArchiveName(value,fallback="sticker-pack"){const name=String(value??"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9_-]+/g,"-").replace(/^[-_]+|-+$/g,"").slice(0,48);return name||fallback}
 const w16=(v,o,n)=>v.setUint16(o,n,true),w32=(v,o,n)=>v.setUint32(o,n>>>0,true);
 export async function createZip(entries,timestamp=new Date()){
  if(!Array.isArray(entries)||entries.length<1||entries.length>100)throw new RangeError("Archive must contain 1-100 entries.");
