@@ -18,3 +18,25 @@ export function nextStickerId(state) {
   state.nextId += 1;
   return id;
 }
+
+
+export const MIN_CLIP_DURATION_SECONDS = 0.1;
+
+export function clampClipRange(start, end, sourceDuration, minimumDuration = MIN_CLIP_DURATION_SECONDS) {
+  if (!Number.isFinite(sourceDuration) || !Number.isFinite(minimumDuration) ||
+      minimumDuration <= 0 || sourceDuration < minimumDuration) return null;
+  const requestedStart = Number.isFinite(start) ? start : 0;
+  const requestedEnd = Number.isFinite(end) ? end : sourceDuration;
+  const safeStart = Math.min(Math.max(0, requestedStart), sourceDuration - minimumDuration);
+  const safeEnd = Math.min(sourceDuration, Math.max(safeStart + minimumDuration, requestedEnd));
+  return { start: safeStart, end: safeEnd };
+}
+
+export function isClipRangeAllowed(start, end, sourceDuration,
+  maxDuration = MAX_CLIP_DURATION_SECONDS,
+  minimumDuration = MIN_CLIP_DURATION_SECONDS) {
+  return Number.isFinite(sourceDuration) && sourceDuration >= minimumDuration &&
+    Number.isFinite(start) && Number.isFinite(end) && start >= 0 &&
+    end >= start + minimumDuration - Number.EPSILON &&
+    end <= sourceDuration && isClipDurationAllowed(start, end, maxDuration);
+}
