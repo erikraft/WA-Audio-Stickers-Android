@@ -5,24 +5,13 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-val releaseKeys = listOf(
-    providers.environmentVariable("KEYSTORE_PATH").orNull,
-    providers.environmentVariable("KEYSTORE_PASSWORD").orNull,
-    providers.environmentVariable("KEY_ALIAS").orNull,
-    providers.environmentVariable("KEY_PASSWORD").orNull
+val releaseSigningValues = linkedMapOf(
+    "KEYSTORE_PATH" to providers.environmentVariable("KEYSTORE_PATH").orNull,
+    "KEYSTORE_PASSWORD" to providers.environmentVariable("KEYSTORE_PASSWORD").orNull,
+    "KEY_ALIAS" to providers.environmentVariable("KEY_ALIAS").orNull,
+    "KEY_PASSWORD" to providers.environmentVariable("KEY_PASSWORD").orNull
 )
-val hasAnyReleaseKey = releaseKeys.any { !it.isNullOrBlank() }
-val hasAllReleaseKeys = releaseKeys.all { !it.isNullOrBlank() }
-val releaseTaskRequested = gradle.startParameter.taskNames.any {
-    it.contains("assembleRelease", ignoreCase = true) ||
-        it.contains("bundleRelease", ignoreCase = true)
-}
-if (hasAnyReleaseKey && !hasAllReleaseKeys) {
-    throw GradleException("Release signing configuration is incomplete.")
-}
-if (releaseTaskRequested && !hasAllReleaseKeys) {
-    throw GradleException("Release tasks require all signing environment variables.")
-}
+val hasCompleteReleaseSigningConfig = releaseSigningValues.values.all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.erikraft.soundstickers"
@@ -38,12 +27,12 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            if (hasAllReleaseKeys) {
-                storeFile = file(releaseKeys[0]!!)
-                storePassword = releaseKeys[1]
-                keyAlias = releaseKeys[2]
-                keyPassword = releaseKeys[3]
+        if (hasCompleteReleaseSigningConfig) {
+            create("release") {
+                storeFile = file(releaseSigningValues.getValue("KEYSTORE_PATH")!!)
+                storePassword = releaseSigningValues.getValue("KEYSTORE_PASSWORD")
+                keyAlias = releaseSigningValues.getValue("KEY_ALIAS")
+                keyPassword = releaseSigningValues.getValue("KEY_PASSWORD")
             }
         }
     }
@@ -60,7 +49,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (hasAllReleaseKeys) {
+            if (hasCompleteReleaseSigningConfig) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
@@ -79,6 +68,21 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
+tasks.configureEach {
+    if (name == "assembleRelease" || name == "bundleRelease") {
+        doFirst {
+            val missingSigningValues = releaseSigningValues
+                .filterValues { it.isNullOrBlank() }
+                .keys
+
+            check(missingSigningValues.isEmpty()) {
+                "Release tasks require all signing environment variables: " +
+                    missingSigningValues.joinToString()
+            }
+        }
     }
 }
 

@@ -4,7 +4,7 @@
 
 ## 1. Reconhecimento
 
-- **Stack:** Kotlin, Android Gradle Plugin 8.13.2, Kotlin Gradle Plugin 2.4.21, AndroidX WebViewAssetLoader, JavaScript/HTML/CSS e ZIP local. JDK 17, Gradle 8.13.
+- **Stack:** Kotlin, Android Gradle Plugin 8.13.2, Kotlin Gradle Plugin 2.3.21, AndroidX WebViewAssetLoader, JavaScript/HTML/CSS e ZIP local. JDK 17, Gradle 8.13.
 - **Superfície:** Activity launcher; seletor de arquivos do Android; ponte JS AndroidBridge; Intents de compartilhamento; FileProvider não exportado; workflows de CI e release.
 - **Autenticação/autorização:** o app não tem contas nem recursos remotos. O sistema operacional concede acesso somente aos URIs escolhidos no SAF picker. A Activity é exportada apenas para o launcher.
 - **Dados sensíveis:** mídia selecionada é processada no WebView. Arquivos compartilhados são escritos em cacheDir/shared e expostos via FileProvider com URI grant de leitura. O cache é limpo por idade ao iniciar.
