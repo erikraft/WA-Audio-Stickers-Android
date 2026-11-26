@@ -39,7 +39,7 @@ jobs:
           KEYSTORE_PATH: ${{ runner.temp }}/not-created.p12
         run: ./gradlew help
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 
