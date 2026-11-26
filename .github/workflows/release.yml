@@ -1,0 +1,156 @@
+name: Signed Android APK and AAB Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'erikraft/WA-Audio-Stickers-Android'
+    runs-on: ubuntu-24.04
+    environment:
+      name: production
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        run: |
+          if [ -z "${ANDROID_HOME:-}" ]; then
+            echo "ANDROID_HOME is missing." >&2
+            exit 1
+          fi
+          echo "${ANDROID_HOME}/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+          set +o pipefail
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses
+          set -o pipefail
+
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/wrapper-validation@v4
+
+      - name: Make wrapper executable
+        run: chmod +x gradlew
+
+      - name: Resolve release metadata
+        id: meta
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+            echo "is_tag=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_name=manual" >> "$GITHUB_OUTPUT"
+            echo "is_tag=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run unit tests
+        run: ./gradlew clean test --no-build-cache --rerun-tasks
+
+      - name: Decode Android signing keystore
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+        run: |
+          if [ -z "${KEYSTORE_FILE}" ]; then
+            echo "KEYSTORE_FILE secret is not configured." >&2
+            exit 1
+          fi
+          printf '%s' "${KEYSTORE_FILE}" | base64 --decode > "${{ runner.temp }}/erikraft-sound-stickers-release.jks"
+          test -s "${{ runner.temp }}/erikraft-sound-stickers-release.jks" || {
+            echo "Decoded keystore is empty." >&2
+            exit 1
+          }
+
+      - name: Validate remaining signing secrets
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          for value in KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!value}" ]; then
+              echo "${value} secret is not configured." >&2
+              exit 1
+            fi
+          done
+
+      - name: Build signed APK and AAB
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/erikraft-sound-stickers-release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew clean assembleRelease bundleRelease
+
+      - name: Validate and prepare artifacts
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag_name }}
+          IS_TAG: ${{ steps.meta.outputs.is_tag }}
+        run: |
+          APK_PATH="app/build/outputs/apk/release/app-release.apk"
+          AAB_PATH="app/build/outputs/bundle/release/app-release.aab"
+          for artifact in "$APK_PATH" "$AAB_PATH"; do
+            if [ ! -s "$artifact" ]; then
+              echo "Missing or empty artifact: $artifact" >&2
+              exit 1
+            fi
+          done
+          cp "$APK_PATH" ErikrafT-Sound-Stickers-release.apk
+          cp "$AAB_PATH" ErikrafT-Sound-Stickers-release.aab
+          APKSIGNER_PATH="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          if [ -z "$APKSIGNER_PATH" ]; then
+            echo "Unable to locate apksigner." >&2
+            exit 1
+          fi
+          "$APKSIGNER_PATH" verify --verbose ErikrafT-Sound-Stickers-release.apk
+          jarsigner -verify ErikrafT-Sound-Stickers-release.aab
+          if [ "$IS_TAG" = "true" ]; then
+            cp ErikrafT-Sound-Stickers-release.apk "ErikrafT-Sound-Stickers-$TAG_NAME.apk"
+            cp ErikrafT-Sound-Stickers-release.aab "ErikrafT-Sound-Stickers-$TAG_NAME.aab"
+          fi
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erikraft-sound-stickers-apk
+          path: ErikrafT-Sound-Stickers-release.apk
+          if-no-files-found: ignore
+
+      - name: Upload AAB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erikraft-sound-stickers-aab
+          path: ErikrafT-Sound-Stickers-release.aab
+          if-no-files-found: ignore
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ErikrafT-Sound-Stickers-${{ steps.meta.outputs.tag_name }}.apk
+            ErikrafT-Sound-Stickers-${{ steps.meta.outputs.tag_name }}.aab
+
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f "${{ runner.temp }}/erikraft-sound-stickers-release.jks"

@@ -1,0 +1,89 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Test and build Android app
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+          set +o pipefail
+          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses
+          set -o pipefail
+
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/wrapper-validation@v4
+
+      - name: Verify Gradle configuration tolerates partial signing variables
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/not-created.p12
+        run: ./gradlew help
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check and test the web editor modules
+        run: |
+          node --check app/src/main/assets/www/src/main.js
+          node --test tests/editor-utils.test.mjs
+
+      - name: Test, compile and lint debug variant
+        run: |
+          chmod +x gradlew
+          ./gradlew clean testDebugUnitTest assembleDebug lintDebug
+
+      - name: Generate a temporary CI-only release signing key
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/ci-release.p12
+          KEYSTORE_PASSWORD: ci-temporary-password
+          KEY_ALIAS: ci-release
+          KEY_PASSWORD: ci-temporary-password
+        run: |
+          keytool -genkeypair -noprompt -storetype PKCS12 \
+            -keystore "$KEYSTORE_PATH" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -alias "$KEY_ALIAS" \
+            -keyalg RSA -keysize 2048 -validity 1 \
+            -dname "CN=CI Release Validation, OU=Build, O=ErikrafT, C=BR"
+
+      - name: Build minified release APK and AAB to verify R8 metadata compatibility
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/ci-release.p12
+          KEYSTORE_PASSWORD: ci-temporary-password
+          KEY_ALIAS: ci-release
+          KEY_PASSWORD: ci-temporary-password
+        run: ./gradlew assembleRelease bundleRelease --warning-mode=all
+
+      - name: Remove temporary CI release key
+        if: always()
+        run: rm -f "${{ runner.temp }}/ci-release.p12"
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: erikraft-sound-stickers-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
