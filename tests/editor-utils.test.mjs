@@ -42,9 +42,10 @@ test("sticker ID generator rejects invalid state", () => {
   assert.throws(() => editorUtils.nextStickerId({}), /positive safe integer/);
 });
 
-test("safe archive names strip leading underscores and remain share-safe", () => {
+test("safe archive names strip leading underscores and preserve trailing cleanup", () => {
   assert.equal(zip.safeArchiveName("__My Pack"), "my-pack");
   assert.equal(zip.safeArchiveName("___"), "sticker-pack");
   assert.equal(zip.safeArchiveName("My Pack__"), "my-pack__");
+  assert.equal(zip.safeArchiveName("My Pack---"), "my-pack");
   assert.match(zip.safeArchiveName("__audio-pack"), /^[a-z0-9][a-z0-9_-]*$/);
 });
