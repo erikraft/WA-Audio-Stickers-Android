@@ -22,9 +22,13 @@ O repositório oficial WhatsApp/stickers documenta integração de pacotes conve
 
 O ZIP é um arquivo de organização/backup, não um pacote nativo importável pelo WhatsApp.
 
+## Versão Web para iPhone e iPad
+
+Para usar o editor em iPhone ou iPad pelo navegador, acesse [ErikrafT Sound Stickers — Web](https://sticker-ios.erikraft.com/). O código-fonte está em [erikraft/WA-Audio-Stickers-iOS](https://github.com/erikraft/WA-Audio-Stickers-iOS). É uma edição web independente deste aplicativo Android nativo; não é um APK nem um aplicativo publicado na App Store.
+
 ## Extensão de navegador de terceiros
 
-Para o fluxo de integração com WhatsApp Web, consulte https://github.com/vish-4-1/WA-audio-stickers-en. Essa extensão não foi criada, mantida, desenvolvida, pertence ou é oficialmente afiliada a ErikrafT. Este app é uma implementação independente e não copia o código da extensão.
+Para o fluxo de integração com WhatsApp Web, consulte o projeto independente [vish-4-1/WA-audio-stickers-en](https://github.com/vish-4-1/WA-audio-stickers-en). **Esse repositório não pertence a ErikrafT e a extensão não foi criada, mantida ou oficialmente afiliada a ErikrafT.** Este app Android é uma implementação independente e não copia o código da extensão.
 
 ## Requisitos e desenvolvimento
 
