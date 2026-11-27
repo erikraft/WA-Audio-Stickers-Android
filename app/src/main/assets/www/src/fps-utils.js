@@ -5,7 +5,7 @@ export function defaultImageFps(file) {
   if (!file || typeof file !== "object") return 5;
   const mimeType = typeof file.type === "string" ? file.type.toLowerCase() : "";
   const name = typeof file.name === "string" ? file.name : "";
-  return mimeType === "image/gif" || /\\.gif$/i.test(name) ? 30 : 5;
+  return mimeType === "image/gif" || /\.gif$/i.test(name) ? 30 : 5;
 }
 
 export function normalizeExportFps(value) {
