@@ -46,5 +46,7 @@ class NativeExportRulesTest {
         assertFalse(NativeExportRules.isValidClip(2.0, 12.01, 12.0))
         assertFalse(NativeExportRules.isValidClip(Double.NaN, 3.0, 12.0))
         assertFalse(NativeExportRules.isValidClip(3.0, 3.0, 12.0))
+        assertFalse(NativeExportRules.isValidClip(3.0, 3.05, 12.0))
+        assertTrue(NativeExportRules.isValidClip(3.0, 3.1, 12.0))
     }
 }
