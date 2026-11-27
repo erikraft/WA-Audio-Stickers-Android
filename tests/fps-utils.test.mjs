@@ -24,6 +24,14 @@ test("automatic FPS follows common source frame rates without exceeding the 30 F
   assert.equal(fpsUtils.chooseOptimalFps([0, 0.2, 0.4, 0.6]), 5);
 });
 
+test("automatic image FPS preserves GIF animation and keeps still images light", () => {
+  assert.equal(fpsUtils.defaultImageFps({ type: "image/gif", name: "animation.bin" }), 30);
+  assert.equal(fpsUtils.defaultImageFps({ type: "application/octet-stream", name: "ANIMATION.GIF" }), 30);
+  assert.equal(fpsUtils.defaultImageFps({ type: "image/webp", name: "still.webp" }), 5);
+  assert.equal(fpsUtils.defaultImageFps({ type: "image/png", name: "still.png" }), 5);
+  assert.equal(fpsUtils.defaultImageFps(null), 5);
+});
+
 test("automatic FPS ignores large dropped-frame gaps when estimating cadence", () => {
   const times = [0, 1 / 30, 2 / 30, 3 / 30, 1, 1 + 1 / 30, 1 + 2 / 30, 1 + 3 / 30];
   assert.equal(fpsUtils.chooseOptimalFps(times), 30);
