@@ -1,4 +1,4 @@
-import{createZip,safeArchiveName}from"./zip.js";import{clampClipRange,isClipRangeAllowed,nextStickerId}from"./editor-utils.js";import{chooseOptimalFps,normalizeExportFps}from"./fps-utils.js";
+import{createZip,safeArchiveName}from"./zip.js";import{clampClipRange,isClipRangeAllowed,nextStickerId}from"./editor-utils.js";import{chooseOptimalFps,defaultImageFps,normalizeExportFps}from"./fps-utils.js";
 const $=id=>document.getElementById(id),MAX=10,MAX_ITEMS=30,MAX_BYTES=150*1024*1024,MAX_PACK_BYTES=75*1024*1024;
 const s={media:null,mediaUrl:null,kind:null,audio:null,audioUrl:null,duration:0,pack:[],nextId:1,loadToken:0,rendering:false},video=$("videoPreview"),image=$("imagePreview"),player=$("audioPreview"),wave=$("waveform"),ctx=wave.getContext("2d");let mixedPreview=null,mixedPreviewUrl=null,previewMainGain=1,previewMixGain=.8;
 function toast(message,error=false){const el=document.createElement("div");el.className="toast"+(error?" error":"");el.textContent=message;$("toast").append(el);requestAnimationFrame(()=>el.classList.add("visible"));setTimeout(()=>{el.classList.remove("visible");setTimeout(()=>el.remove(),220)},3500)}
@@ -161,7 +161,7 @@ async function renderClip(){
     await seekVideo(sourceVideo,start)
    }
   }else if(fps===null){
-   fps=5
+   fps=defaultImageFps(media)
   }
   videoStream=canvas.captureStream(fps);
   const stream=new MediaStream([...videoStream.getVideoTracks(),...audioOut.stream.getAudioTracks()]);
