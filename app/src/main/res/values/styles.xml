@@ -1,10 +1,12 @@
 <resources>
     <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/brand_green</item>
-        <item name="colorOnPrimary">#081B0F</item>
+        <item name="colorOnPrimary">#07180D</item>
         <item name="colorSecondary">@color/brand_green</item>
+        <item name="colorOnSecondary">#07180D</item>
+        <item name="colorSurface">@color/app_surface</item>
         <item name="android:colorAccent">@color/brand_green</item>
-        <item name="android:statusBarColor">@color/brand_green</item>
+        <item name="android:statusBarColor">@color/app_background</item>
         <item name="android:navigationBarColor">@color/app_background</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowBackground">@color/app_background</item>

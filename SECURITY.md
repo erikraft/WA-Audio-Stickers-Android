@@ -7,9 +7,9 @@ Security fixes target the latest code on the default branch and active release l
 Do not publish exploit details, personal media, tokens or private files in a public issue. Use GitHub private vulnerability reporting or a Security Advisory when available.
 
 ## Security boundaries
-- WebView content is bundled and served by AndroidX WebViewAssetLoader from the appassets.androidplatform.net origin.
-- Navigation and subresource requests are restricted to bundled assets; GitHub links open outside the WebView.
-- The native JavaScript bridge validates MIME, filename and Base64 length and writes only under private cache.
-- Shared files use a non-exported FileProvider, read-only URI grants and a single cache subdirectory.
-- The app uses Android Storage Access Framework and does not request broad storage permissions.
-- No backend, account system, payments, database, webhook, AI API or app-level network endpoint exists.
+- The Android UI, media selection, preview and export are implemented natively in Kotlin; the application does not embed a WebView or JavaScript bridge.
+- The app uses Android Storage Access Framework document pickers and retains read access only to user-selected content URIs.
+- Media3 Transformer processes selected media locally and writes generated MP4 files only under the app's private cache directory.
+- A non-exported FileProvider grants read-only access to the specific generated file shared with WhatsApp or WhatsApp Business.
+- Temporary exports are cleaned by age when the app starts.
+- The app does not request broad storage permissions, declare the INTERNET permission, or expose an app backend/network endpoint.

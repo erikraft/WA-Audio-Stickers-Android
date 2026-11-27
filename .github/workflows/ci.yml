@@ -39,15 +39,6 @@ jobs:
           KEYSTORE_PATH: ${{ runner.temp }}/not-created.p12
         run: ./gradlew help
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-
-      - name: Check and test the web editor modules
-        run: |
-          node --check app/src/main/assets/www/src/main.js
-          node --test tests/editor-utils.test.mjs
-
       - name: Test, compile and lint debug variant
         run: |
           chmod +x gradlew
