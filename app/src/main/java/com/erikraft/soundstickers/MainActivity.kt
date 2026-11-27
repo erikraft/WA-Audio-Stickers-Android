@@ -21,6 +21,7 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
@@ -287,17 +288,46 @@ class MainActivity : AppCompatActivity() {
             clipData = ClipData.newUri(contentResolver, file.name, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+
         if (targetWhatsApp) {
-            for (targetPackage in listOf("com.whatsapp", "com.whatsapp.w4b")) {
-                try {
-                    startActivity(Intent(sendIntent).setPackage(targetPackage))
-                    return
-                } catch (_: ActivityNotFoundException) {
-                    // Try the next WhatsApp edition.
-                }
+            val targets = listOf(
+                "WhatsApp" to "com.whatsapp",
+                "WhatsApp Business" to "com.whatsapp.w4b"
+            ).filter { (_, packageName) ->
+                packageManager.getLaunchIntentForPackage(packageName) != null
             }
-            showToast("WhatsApp não encontrado. Escolha outro app para compartilhar.")
+
+            if (targets.isEmpty()) {
+                showToast("WhatsApp e WhatsApp Business não foram encontrados.")
+                openGeneralShareChooser(sendIntent)
+                return
+            }
+
+            AlertDialog.Builder(this)
+                .setTitle("Enviar clipe")
+                .setMessage(
+                    "Escolha o aplicativo. O clipe será compartilhado como vídeo; " +
+                        "a criação como figurinha sonora depende do recurso nativo " +
+                        "disponível na sua conta do WhatsApp."
+                )
+                .setItems(targets.map { it.first }.toTypedArray()) { _, index ->
+                    val targetPackage = targets.getOrNull(index)?.second ?: return@setItems
+                    runCatching {
+                        startActivity(Intent(sendIntent).setPackage(targetPackage))
+                    }.onFailure {
+                        showToast("Não foi possível abrir o aplicativo escolhido.")
+                        openGeneralShareChooser(sendIntent)
+                    }
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
+            return
         }
+
+        openGeneralShareChooser(sendIntent)
+    }
+
+    private fun openGeneralShareChooser(sendIntent: Intent) {
         sendIntent.setPackage(null)
         runCatching {
             startActivity(Intent.createChooser(sendIntent, "Compartilhar arquivo"))
