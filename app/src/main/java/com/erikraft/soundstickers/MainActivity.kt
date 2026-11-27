@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
         scroll.addView(
             content,
-            ScrollView.LayoutParams(
+            FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         buildAudioCard()
         buildTrimCard()
         buildDeliveryCard()
-        addView(spacer(dp(24)))
+        content.addView(spacer(dp(24)))
         addText(
             "PROCESSAMENTO LOCAL",
             10f,
@@ -177,7 +177,7 @@ class MainActivity : AppCompatActivity() {
         header.addView(localChip)
         content.addView(header)
 
-        addView(spacer(dp(26)))
+        content.addView(spacer(dp(26)))
         addText("SEU ESTÚDIO", 10f, GREEN_LIGHT, bold = true, letterSpacing = 0.18f)
         addText("Crie clipes\ncom identidade sonora.", 31f, TEXT, bold = true, top = dp(10))
         addText(
@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() {
             top = dp(10),
             lineSpacing = 1.18f
         )
-        addView(spacer(dp(24)))
+        content.addView(spacer(dp(24)))
     }
 
     private fun buildMediaCard() {
@@ -770,7 +770,7 @@ class MainActivity : AppCompatActivity() {
     private fun textInput(hintText: String, initial: String): Pair<TextInputLayout, TextInputEditText> {
         val layout = TextInputLayout(this).apply {
             hint = hintText
-            boxBackgroundMode = TextInputLayout.BOX_OUTLINE
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
             boxStrokeColor = GREEN
             setBoxCornerRadii(dp(12).toFloat(), dp(12).toFloat(), dp(12).toFloat(), dp(12).toFloat())
         }
@@ -782,7 +782,7 @@ class MainActivity : AppCompatActivity() {
             setSingleLine(true)
             setText(initial)
         }
-        layout.addView(input, TextInputLayout.LayoutParams(
+        layout.addView(input, ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         ))
