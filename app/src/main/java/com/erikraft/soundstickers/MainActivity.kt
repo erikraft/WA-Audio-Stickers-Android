@@ -428,12 +428,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val modeIndex = audioModeDropdown.listSelection.takeIf { it >= 0 } ?: run {
-            when (audioModeDropdown.text?.toString()) {
-                "Substituir pelo áudio escolhido" -> 1
-                "Misturar os dois áudios" -> 2
-                else -> 0
-            }
+        val modeIndex = when (audioModeDropdown.text?.toString()) {
+            "Substituir pelo áudio escolhido" -> 1
+            "Misturar os dois áudios" -> 2
+            else -> 0
         }
         val customAudio = audioUri
         val useCustomAudio = customAudio != null && modeIndex != 0
@@ -791,20 +789,17 @@ class MainActivity : AppCompatActivity() {
         return layout to input
     }
 
-    private fun dropdown(options: List<String>): AutoCompleteTextView {
-        val field = TextInputLayout(this).apply {
-            boxBackgroundMode = TextInputLayout.BOX_OUTLINE
-            boxStrokeColor = STROKE
-            setBoxCornerRadii(dp(12).toFloat(), dp(12).toFloat(), dp(12).toFloat(), dp(12).toFloat())
-            endIconMode = TextInputLayout.END_ICON_DROPDOWN_MENU
-        }
-        val input = AutoCompleteTextView(this).apply {
+    private fun dropdown(options: List<String>): AutoCompleteTextView =
+        AutoCompleteTextView(this).apply {
             setTextColor(TEXT)
             setHintTextColor(MUTED)
             setTextSize(14f)
             inputType = InputType.TYPE_NULL
             keyListener = null
             threshold = 0
+            setPadding(dp(14), 0, dp(14), 0)
+            background = roundedStrokeDrawable(SURFACE_HIGH, STROKE, dp(12).toFloat())
+            setDropDownBackgroundDrawable(roundedDrawable(SURFACE_HIGH, dp(12).toFloat()))
             setAdapter(ArrayAdapter(
                 this@MainActivity,
                 android.R.layout.simple_list_item_1,
@@ -812,13 +807,6 @@ class MainActivity : AppCompatActivity() {
             ))
             setOnClickListener { showDropDown() }
         }
-        field.addView(input, TextInputLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(54)
-        ))
-        field.tag = input
-        return input
-    }
 
     private fun button(text: String, filled: Boolean, action: () -> Unit): MaterialButton {
         return MaterialButton(this).apply {
