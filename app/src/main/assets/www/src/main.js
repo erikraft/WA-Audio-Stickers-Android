@@ -84,19 +84,26 @@ async function seekVideo(video,time){
 function estimatePresentedFps(sourceVideo){
  if(typeof sourceVideo.requestVideoFrameCallback!=="function")return Promise.resolve(30);
  return new Promise(resolve=>{
-  const mediaTimes=[];
+  const samples=[];
   const startedAt=performance.now();
-  let callbackId=null,timer=0,settled=false;
+  let callbackId=null,timer=0,settled=false,samplesReliable=true;
   const finish=()=>{
    if(settled)return;
    settled=true;
    clearTimeout(timer);
    if(callbackId!==null&&typeof sourceVideo.cancelVideoFrameCallback==="function")sourceVideo.cancelVideoFrameCallback(callbackId);
-   resolve(chooseOptimalFps(mediaTimes))
+   resolve(samplesReliable?chooseOptimalFps(samples):30)
   };
   const onFrame=(now,metadata)=>{
-   if(Number.isFinite(metadata?.mediaTime))mediaTimes.push(metadata.mediaTime);
-   if(mediaTimes.length>=8||performance.now()-startedAt>=800){finish();return}
+   const mediaTime=metadata?.mediaTime;
+   const presentedFrames=metadata?.presentedFrames;
+   if(!Number.isFinite(mediaTime)||!Number.isSafeInteger(presentedFrames)){
+    samplesReliable=false;
+    finish();
+    return
+   }
+   samples.push({mediaTime,presentedFrames});
+   if(samples.length>=8||performance.now()-startedAt>=800){finish();return}
    callbackId=sourceVideo.requestVideoFrameCallback(onFrame)
   };
   timer=setTimeout(finish,1500);
