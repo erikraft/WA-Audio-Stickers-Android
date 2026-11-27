@@ -29,7 +29,7 @@ internal object NativeExportRules {
         if (!startSeconds.isFinite() || !endSeconds.isFinite() || !durationSeconds.isFinite()) {
             return false
         }
-        if (startSeconds < 0.0 || endSeconds <= startSeconds || durationSeconds <= 0.0) {
+        if (startSeconds < 0.0 || endSeconds - startSeconds < 0.1 || durationSeconds <= 0.0) {
             return false
         }
         if (endSeconds > durationSeconds + 0.001) return false
