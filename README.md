@@ -6,6 +6,8 @@ Aplicativo Android nativo em Kotlin, com editor local de mídia integrado em uma
 
 - Importação de vídeos, GIFs, imagens e áudios pelo seletor de arquivos do Android.
 - Pré-visualização e player com progresso, volume, mute e waveform.
+- FPS automático estimado pela cadência de quadros apresentada pelo vídeo, com escolha manual de 30 a 5 FPS.
+- Ícone adaptativo Android (máscara quadrada/circular conforme o launcher) e camada monocromática para Themed Icons no Android 13 ou superior.
 - Recorte de clipes de até 10 segundos.
 - Substituição ou mixagem de áudio quando o WebView oferece suporte ao formato.
 - Pacotes com até 30 clipes e limite agregado de 75 MB.
@@ -16,9 +18,9 @@ Aplicativo Android nativo em Kotlin, com editor local de mídia integrado em uma
 
 ## Limite real da integração WhatsApp
 
-O botão WhatsApp envia o clipe MP4/WebM como mídia por meio de uma Intent ACTION_SEND. Ele não abre diretamente o editor interno de criação de figurinha sonora.
+O botão WhatsApp abre um diálogo do próprio app para escolher WhatsApp ou WhatsApp Business quando ambos estiverem instalados e compartilha o clipe MP4/WebM como mídia por meio de uma Intent ACTION_SEND. Esse diálogo não é o diálogo nativo de instalação de pacotes do WhatsApp e não instala uma figurinha sonora automaticamente.
 
-O repositório oficial WhatsApp/stickers documenta integração de pacotes convencionais através de ContentProvider e metadados. Essa API pública não documenta importação de pacotes de figurinhas sonoras com áudio vinculado. Depois de receber o vídeo, o usuário finaliza a criação no editor nativo do WhatsApp quando o recurso estiver disponível para sua conta.
+O repositório oficial WhatsApp/stickers documenta integração de pacotes convencionais através de ContentProvider e metadados. Em 27 de novembro de 2026, o mantenedor confirmou que a API de figurinhas sonoras para terceiros ainda não está disponível e está no roadmap: https://github.com/WhatsApp/stickers/issues/1163. Por isso, o app não simula uma chamada ENABLE_STICKER_PACK como se ela importasse áudio. Depois de receber o vídeo, o usuário finaliza a criação no editor nativo do WhatsApp quando o recurso estiver disponível para sua conta.
 
 O ZIP é um arquivo de organização/backup, não um pacote nativo importável pelo WhatsApp.
 
