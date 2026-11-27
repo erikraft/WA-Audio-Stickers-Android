@@ -30,6 +30,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
@@ -47,6 +48,7 @@ import java.io.File
 import java.text.Normalizer
 import java.util.Locale
 
+@UnstableApi
 class MainActivity : AppCompatActivity() {
     private enum class VisualKind { VIDEO, IMAGE }
 
