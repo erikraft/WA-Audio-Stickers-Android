@@ -6,7 +6,7 @@ Aplicativo Android nativo em Kotlin, com editor local de mídia integrado em uma
 
 - Importação de vídeos, GIFs, imagens e áudios pelo seletor de arquivos do Android.
 - Pré-visualização e player com progresso, volume, mute e waveform.
-- FPS automático estimado pela cadência de quadros apresentada pelo vídeo, com escolha manual de 30 a 5 FPS.
+- FPS automático estimado pela cadência de quadros apresentada pelo vídeo, com escolha manual de 30 a 5 FPS; GIFs preservam até 30 FPS e imagens estáticas usam 5 FPS.
 - Ícone adaptativo Android (máscara quadrada/circular conforme o launcher) e camada monocromática para Themed Icons no Android 13 ou superior.
 - Recorte de clipes de até 10 segundos.
 - Substituição ou mixagem de áudio quando o WebView oferece suporte ao formato.
