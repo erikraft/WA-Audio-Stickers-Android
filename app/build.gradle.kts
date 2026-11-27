@@ -22,7 +22,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -88,7 +88,9 @@ tasks.configureEach {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.8.0")
-    implementation("androidx.webkit:webkit:1.18.0")
     implementation("com.google.android.material:material:1.14.0")
+    implementation("androidx.media3:media3-exoplayer:1.11.1")
+    implementation("androidx.media3:media3-ui:1.11.1")
+    implementation("androidx.media3:media3-transformer:1.11.1")
     testImplementation("junit:junit:4.13.2")
 }
