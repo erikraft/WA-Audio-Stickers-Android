@@ -21,6 +21,7 @@ test("automatic FPS follows common source frame rates without exceeding the 30 F
   assert.equal(fpsUtils.chooseOptimalFps(frameTimes(15)), 15);
   assert.equal(fpsUtils.chooseOptimalFps(frameTimes(10)), 10);
   assert.equal(fpsUtils.chooseOptimalFps(frameTimes(5)), 5);
+  assert.equal(fpsUtils.chooseOptimalFps([0, 0.2, 0.4, 0.6]), 5);
 });
 
 test("automatic FPS ignores large dropped-frame gaps when estimating cadence", () => {
