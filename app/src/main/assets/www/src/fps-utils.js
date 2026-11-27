@@ -20,16 +20,35 @@ export function normalizeExportFps(value) {
  * by the source video. A missing/unreliable sample intentionally falls back to
  * 30 FPS instead of silently producing an unexpectedly choppy clip.
  */
-export function chooseOptimalFps(mediaTimes, maximumFps = DEFAULT_FPS) {
-  if (!Array.isArray(mediaTimes)) return DEFAULT_FPS;
+export function chooseOptimalFps(samples, maximumFps = DEFAULT_FPS) {
+  if (!Array.isArray(samples)) return DEFAULT_FPS;
   if (!Number.isFinite(maximumFps) || maximumFps < 5) return DEFAULT_FPS;
 
   const intervals = [];
-  for (let index = 1; index < mediaTimes.length; index += 1) {
-    const previous = mediaTimes[index - 1];
-    const current = mediaTimes[index];
-    if (!Number.isFinite(previous) || !Number.isFinite(current)) continue;
-    const interval = current - previous;
+  for (let index = 1; index < samples.length; index += 1) {
+    const previous = samples[index - 1];
+    const current = samples[index];
+    if (!previous || !current || typeof previous !== "object" || typeof current !== "object") {
+      return DEFAULT_FPS;
+    }
+
+    const previousTime = previous.mediaTime;
+    const currentTime = current.mediaTime;
+    const previousFrames = previous.presentedFrames;
+    const currentFrames = current.presentedFrames;
+    if (!Number.isFinite(previousTime) || !Number.isFinite(currentTime) ||
+        !Number.isSafeInteger(previousFrames) || !Number.isSafeInteger(currentFrames)) {
+      return DEFAULT_FPS;
+    }
+
+    const frameDelta = currentFrames - previousFrames;
+    const timeDelta = currentTime - previousTime;
+    if (frameDelta <= 0 || timeDelta <= 0) return DEFAULT_FPS;
+
+    // presentedFrames advances by more than one when compositor callbacks were
+    // skipped. Divide media-time by that count so a dropped callback does not
+    // make a 30 FPS source look like a 15 FPS source.
+    const interval = timeDelta / frameDelta;
     if (interval >= 1 / 120 && interval <= 1.5) intervals.push(interval);
   }
 
@@ -45,8 +64,7 @@ export function chooseOptimalFps(mediaTimes, maximumFps = DEFAULT_FPS) {
   let smallestDifference = Number.POSITIVE_INFINITY;
 
   for (const fps of SUPPORTED_FPS) {
-    const candidate = Math.min(fps, maximumFps);
-    if (candidate !== fps) continue;
+    if (fps > maximumFps) continue;
     const difference = Math.abs(fps - measuredFps);
     if (difference < smallestDifference ||
         (difference === smallestDifference && fps > selected)) {
