@@ -416,8 +416,8 @@ class MainActivity : AppCompatActivity() {
         val visual = visualUri ?: return
         if (exportTransformer != null) return
 
-        val startSeconds = startInput.text?.toString()?.toDoubleOrNull() ?: Double.NaN
-        val endSeconds = endInput.text?.toString()?.toDoubleOrNull() ?: Double.NaN
+        val startSeconds = parseSeconds(startInput.text) ?: Double.NaN
+        val endSeconds = parseSeconds(endInput.text) ?: Double.NaN
         val durationSeconds = visualDurationMs / 1000.0
         if (!NativeExportRules.isValidClip(startSeconds, endSeconds, durationSeconds)) {
             showMessage("O trecho deve ficar dentro da mídia e ter entre 0,1 e 10 segundos.")
@@ -520,7 +520,10 @@ class MainActivity : AppCompatActivity() {
 
         stopPreviewAudio()
         previewPlayer?.pause()
-        val outputDirectory = getShareDirectory()
+        val outputDirectory = runCatching { getShareDirectory() }.getOrElse { error ->
+            showMessage(error.message ?: "Não foi possível preparar o armazenamento temporário.")
+            return
+        }
         val outputFile = File(
             outputDirectory,
             safeOutputBaseName(visualName) + "-" + System.currentTimeMillis() + ".mp4"
@@ -724,6 +727,9 @@ class MainActivity : AppCompatActivity() {
             .take(48)
         return normalized.ifBlank { "erikraft-sound-clip" }
     }
+
+    private fun parseSeconds(value: CharSequence?): Double? =
+        value?.toString()?.trim()?.replace(',', '.')?.toDoubleOrNull()
 
     private fun formatDuration(durationMs: Long): String {
         val totalSeconds = durationMs / 1000L
