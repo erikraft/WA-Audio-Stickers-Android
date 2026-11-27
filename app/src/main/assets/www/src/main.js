@@ -96,10 +96,10 @@ function estimatePresentedFps(sourceVideo){
   };
   const onFrame=(now,metadata)=>{
    if(Number.isFinite(metadata?.mediaTime))mediaTimes.push(metadata.mediaTime);
-   if(performance.now()-startedAt>=450){finish();return}
+   if(performance.now()-startedAt>=800){finish();return}
    callbackId=sourceVideo.requestVideoFrameCallback(onFrame)
   };
-  timer=setTimeout(finish,900);
+  timer=setTimeout(finish,1500);
   try{callbackId=sourceVideo.requestVideoFrameCallback(onFrame)}catch{finish()}
  })
 }
