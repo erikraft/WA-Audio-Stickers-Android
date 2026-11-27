@@ -75,6 +75,12 @@ function configuredFps(){
  if(fps===null)throw Error("Selecione um FPS válido.");
  return fps
 }
+async function seekVideo(video,time){
+ if(Math.abs(video.currentTime-time)<.01)return;
+ const sought=wait(video,"seeked",8000);
+ video.currentTime=time;
+ await sought
+}
 function estimatePresentedFps(sourceVideo){
  if(typeof sourceVideo.requestVideoFrameCallback!=="function")return Promise.resolve(30);
  return new Promise(resolve=>{
@@ -144,16 +150,16 @@ async function renderClip(){
 
   let fps=configuredFps();
   if(sourceVideo){
-   const sought=wait(sourceVideo,"seeked").catch(()=>{});
-   sourceVideo.currentTime=start;
-   await sought;
-   await audioContext.resume();
-   await sourceVideo.play();
-   if(fps===null)fps=await estimatePresentedFps(sourceVideo);
-   sourceVideo.pause();
-   const reset=wait(sourceVideo,"seeked").catch(()=>{});
-   sourceVideo.currentTime=start;
-   await reset
+   await seekVideo(sourceVideo,start);
+   if(fps===null){
+    sourceVideo.style.cssText="position:fixed;left:-2px;bottom:0;width:1px;height:1px;opacity:.01;pointer-events:none;z-index:-1";
+    document.body.appendChild(sourceVideo);
+    await audioContext.resume();
+    await sourceVideo.play();
+    fps=await estimatePresentedFps(sourceVideo);
+    sourceVideo.pause();
+    await seekVideo(sourceVideo,start)
+   }
   }else if(fps===null){
    fps=5
   }
@@ -196,7 +202,8 @@ async function renderClip(){
   for(const el of[sourceVideo,sourceAudio])if(el){
    el.pause();
    if(el.src.startsWith("blob:"))URL.revokeObjectURL(el.src);
-   el.removeAttribute("src")
+   el.removeAttribute("src");
+   if(el===sourceVideo)el.remove()
   }
   if(sourceImage?.src.startsWith("blob:"))URL.revokeObjectURL(sourceImage.src);
   videoStream?.getTracks().forEach(x=>x.stop());
