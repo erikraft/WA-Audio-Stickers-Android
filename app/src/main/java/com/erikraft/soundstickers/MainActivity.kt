@@ -1,5 +1,3 @@
-@file:OptIn(androidx.media3.common.util.UnstableApi::class)
-
 package com.erikraft.soundstickers
 
 import android.content.ActivityNotFoundException
@@ -32,7 +30,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
@@ -90,10 +87,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = BACKGROUND
-        window.navigationBarColor = BACKGROUND
-        window.decorView.systemUiVisibility = 0
-
         previewPlayer = ExoPlayer.Builder(this).build()
         cleanupExpiredShares()
         buildNativeInterface()
@@ -492,7 +485,7 @@ class MainActivity : AppCompatActivity() {
 
         val composition = try {
             if (useCustomAudio) {
-                val audio = customAudio ?: throw IllegalStateException("Faixa de áudio ausente.")
+                val audio = customAudio
                 val audioClipEndMs = minOf(audioDurationMs, clipDurationMs)
                 if (audioClipEndMs <= 0L) throw IllegalStateException("A faixa de áudio está vazia.")
                 val audioItem = MediaItem.Builder()
