@@ -305,11 +305,6 @@ class MainActivity : AppCompatActivity() {
 
             AlertDialog.Builder(this)
                 .setTitle("Enviar clipe")
-                .setMessage(
-                    "Escolha o aplicativo. O clipe será compartilhado como vídeo; " +
-                        "a criação como figurinha sonora depende do recurso nativo " +
-                        "disponível na sua conta do WhatsApp."
-                )
                 .setItems(targets.map { it.first }.toTypedArray()) { _, index ->
                     val targetPackage = targets.getOrNull(index)?.second ?: return@setItems
                     runCatching {
